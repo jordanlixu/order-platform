@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/order-service/src/main/java/org/example/order/order/repository/OutboxEventRepository.java" value="0b42e119-8995-41b7-8ff5-341c2c18715b" />
+    <file url="file://$PROJECT_DIR$/order-service/src/main/resources/db/changelog/changes/2025-12-03-create-order-table.sql" value="0b42e119-8995-41b7-8ff5-341c2c18715b" />
+  </component>
+</project>
