@@ -17,7 +17,7 @@ public class IdempotentConsumer {
     @KafkaListener(topics = "orders", groupId = "processor-group")
     public void listen(ConsumerRecord<String, String> record) {
         log.info("Received event: {}", record.value());
-        String eventId = record.key(); // 也可以从 header 取
+        String eventId = record.key();
         String payload = record.value();
 
         if (eventId == null) {
