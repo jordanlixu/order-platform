@@ -5,6 +5,8 @@ import org.example.order.order.model.OutboxStatus;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Repository
@@ -14,6 +16,7 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> 
     List<OutboxEvent> findTop50ByStatusOrderByCreatedAt(OutboxStatus status);
 
     // Atomic fetch-and-mark-processing (Postgres-specific, native query).
+    @Transactional
     @Modifying
     @Query(value = """
         WITH cte AS (

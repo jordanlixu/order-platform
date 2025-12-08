@@ -30,6 +30,16 @@ public class OutboxEventPublisherJob {
     @Transactional
     public void publish() {
         // 1) atomic fetch & mark
+        /*
+         * Alternative:
+         * @Transactional
+         * public List<OutboxEvent> fetchAndMarkProcessing(int batchSize) {
+         *    var ids = repo.fetchIdsForProcessing(batchSize);
+         *    if (ids.isEmpty()) return List.of();
+         *    repo.markProcessing(ids);
+         *    return repo.findAllById(ids);
+         * }
+         */
         List<OutboxEvent> events = outboxEventRepository.fetchAndMarkProcessing(BATCH_SIZE);
         if (events == null || events.isEmpty()) return;
         log.info("Fetched {} events", events.size());
