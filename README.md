@@ -1,14 +1,14 @@
-Order Platform Demo
+#Order Platform Demo
 
 A learning project for Kafka event-driven microservices
 Using Outbox Pattern to ensure reliable event delivery and idempotent processing.
 
-🧱 Architecture
-Order Service       ──►  Kafka Topic ("orders")  ──►  Processor Service
+## Architecture
+Order Service  ──►  Kafka Topic ("orders")  ──►  Processor Service
       │
       └── PostgreSQL (Outbox Table)
 
-🚀 Run the Project
+## Run the Project
 1️⃣ Start infrastructure (Kafka + PostgreSQL)
 docker compose up -d
 
@@ -18,7 +18,7 @@ Run order-service
 
 Run processor-service
 
-🔥 Test the API
+## Test the API
 
 Send request:
 
