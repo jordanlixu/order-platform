@@ -23,14 +23,14 @@ Using Outbox Pattern to ensure reliable event delivery and idempotent processing
 
 
 ## Run the Project
-1. Start infrastructure (Kafka + PostgreSQL)
-   docker compose up -d
-
-2. Start services in IntelliJ
-
-   Run order-service
+      1. Start infrastructure (Kafka + PostgreSQL)
+         docker compose up -d
       
-   Run processor-service
+      2. Start services in IntelliJ
+      
+         Run order-service
+            
+         Run processor-service
 
 ## Test the API
 
