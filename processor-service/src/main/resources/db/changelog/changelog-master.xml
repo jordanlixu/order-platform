@@ -5,6 +5,6 @@
         xsi:schemaLocation="
             http://www.liquibase.org/xml/ns/dbchangelog
             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.14.xsd">
-    <include file="/db/changelog/changes/2025-12-04-create-processed_event-table.sql"/>
+    <include file="/db/changelog/changes/2025-12-05-create-processed_event-table.sql"/>
 
 </databaseChangeLog>

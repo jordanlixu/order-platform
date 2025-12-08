@@ -21,7 +21,7 @@ public class KafkaPublisher {
     private final ObjectMapper objectMapper;
 
     public CompletableFuture<Void> publishAsync(OutboxEvent event) {
-        String key = String.valueOf(event.getAggregateId());
+        String key = String.valueOf(event.getId());
         // Serialize the JsonNode to a String
         String payload;
         try {

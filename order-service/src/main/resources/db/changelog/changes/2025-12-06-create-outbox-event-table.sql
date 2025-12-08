@@ -7,7 +7,7 @@ CREATE TYPE orders.outbox_status AS ENUM ('NEW', 'PROCESSING', 'DONE', 'FAILED')
 CREATE TABLE orders.outbox_event
 (
     -- Primary key using modern identity column
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Reference to the order aggregate root
     aggregate_id BIGINT NOT NULL,

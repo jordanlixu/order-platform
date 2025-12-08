@@ -13,6 +13,7 @@ import org.hibernate.type.SqlTypes;
 
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "outbox_event")
@@ -24,8 +25,9 @@ import java.time.OffsetDateTime;
 public class OutboxEvent {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     // Reference to aggregate root
     @Column(name = "aggregate_id", nullable = false)

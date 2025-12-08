@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 
 @Entity
@@ -16,7 +17,8 @@ import java.time.LocalDateTime;
 public class ProcessedEvent {
 
     @Id
-    private Long eventId;
+    @Column(name="event_id")
+    private UUID eventId;
 
     @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT NOW()")
     private LocalDateTime createdAt;
