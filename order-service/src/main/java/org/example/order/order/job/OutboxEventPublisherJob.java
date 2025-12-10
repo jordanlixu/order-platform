@@ -6,14 +6,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.order.model.OutboxEvent;
 import org.example.order.order.model.OutboxStatus;
 import org.example.order.order.repository.OutboxEventRepository;
-import org.example.order.order.service.KafkaPublisher;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
 
 @Slf4j
 @Component
@@ -21,56 +22,49 @@ import java.util.concurrent.CompletableFuture;
 public class OutboxEventPublisherJob {
 
     private final OutboxEventRepository outboxEventRepository;
-    private final KafkaPublisher kafkaPublisher;
+
+    private static final String TOPIC = "orders";
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     private static final int BATCH_SIZE = 50;
     private static final int MAX_RETRY = 5;
 
     @Scheduled(fixedDelay = 5000)
-    @Transactional
     public void publish() {
-        // 1) atomic fetch & mark
-        /*
-         * Alternative:
-         * @Transactional
-         * public List<OutboxEvent> fetchAndMarkProcessing(int batchSize) {
-         *    var ids = repo.fetchIdsForProcessing(batchSize);
-         *    if (ids.isEmpty()) return List.of();
-         *    repo.markProcessing(ids);
-         *    return repo.findAllById(ids);
-         * }
-         */
-        List<OutboxEvent> events = outboxEventRepository.fetchAndMarkProcessing(BATCH_SIZE);
-        if (events == null || events.isEmpty()) return;
-        log.info("Fetched {} events", events.size());
+        this.processOutbox();
+    }
 
-        // 2) async publish
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        for (OutboxEvent e : events) {
-            CompletableFuture<Void> f = kafkaPublisher.publishAsync(e)
-                    .thenRun(() -> {
-                        e.setStatus(OutboxStatus.DONE);
-                        e.setProcessedAt(OffsetDateTime.now());
-                    })
-                    .exceptionally(ex -> {
-                        // increment retry and decide state
-                        e.setRetryCount(Optional.ofNullable(e.getRetryCount()).orElse(0) + 1);
-                        if (e.getRetryCount() >= MAX_RETRY) {
-                            e.setStatus(OutboxStatus.FAILED);
-                        } else {
-                            e.setStatus(OutboxStatus.NEW); // ready for next round
-                        }
-                        return null;
-                    });
-            futures.add(f);
-        }
+    void processOutbox() {
 
-        // 3) wait for all async to finish
+        List<CompletableFuture<SendResult<String, String>>> futures =
+                outboxEventRepository.fetchNewEvents(BATCH_SIZE)
+                        .stream()
+                        .map(this::process)
+                        .toList();
+
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-        // 4) batch save statuses in one DB operation
-        outboxEventRepository.saveAll(events);
-        log.info("Batch updated {} events", events.size());
     }
+
+    private CompletableFuture
+            <SendResult<String, String>> process(OutboxEvent outboxRecord) {
+
+        String key = String.valueOf(outboxRecord.getId());
+        String payload = outboxRecord.getPayload().toString();
+
+        return
+                kafkaTemplate.send(TOPIC, key, payload)
+                        .whenComplete((result, ex) -> {
+                            if (ex == null) {
+                                log.info("Sent record to Kafka: {}", outboxRecord);
+                                outboxRecord.setProcessedAt(OffsetDateTime.now());
+                                outboxRecord.setStatus(OutboxStatus.DONE);
+                                outboxEventRepository.save(outboxRecord);
+                            } else {
+                                log.warn("Failed to publish {}", outboxRecord, ex);
+                            }
+                        });
+    }
+
 }
 
