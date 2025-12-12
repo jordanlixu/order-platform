@@ -1,4 +1,4 @@
---changeset order-service:202412031310-create-outbox-table
+--changeset order-service:202412071310-create-outbox-table
 
 -- Create status enum type first
 CREATE TYPE orders.outbox_status AS ENUM ('NEW', 'PROCESSING', 'DONE', 'FAILED');
@@ -28,12 +28,16 @@ CREATE TABLE orders.outbox_event
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
     -- Timestamp when the event is successfully processed
-    processed_at TIMESTAMP WITH TIME ZONE
+    processed_at TIMESTAMP WITH TIME ZONE,
+
+    -- Timestamp tracks when batch processing started, used for retrying stuck/expired processing
+    processing_started_at TIMESTAMP WITH TIME ZONE
 );
 
 -- Important indexes for efficient querying
 CREATE INDEX idx_outbox_event_created_at ON orders.outbox_event (created_at);
 CREATE INDEX idx_outbox_event_aggregate_id ON orders.outbox_event (aggregate_id);
+CREATE INDEX idx_outbox_event_status_created_at ON orders.outbox_event (status, created_at);
 
 --rollback DROP TYPE orders.outbox_status;
 --rollback DROP TABLE orders.outbox_event;

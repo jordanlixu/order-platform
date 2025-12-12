@@ -1,16 +1,12 @@
 package org.example.order.order.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcType;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.dialect.PostgreSQLEnumJdbcType;
-import org.hibernate.type.SqlTypes;
-
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -55,6 +51,10 @@ public class OutboxEvent {
     // Processed timestamp
     @Column(name = "processed_at")
     private OffsetDateTime processedAt;
+
+    // Batch processing started, used for retrying stuck/expired processing
+    @Column(name = "processing_started_at")
+    private OffsetDateTime processingStartedAt;
 
     // Optional retry count
     @Column(name = "retry_count", nullable = false)
